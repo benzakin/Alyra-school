@@ -1,0 +1,219 @@
+rust language polkadot
+lundi dans 2 sem
+3 premier chapitre
+etherum par la pratique la semaine prochaine
+
+arpanet reseau universitaire et militaire
+web 1.0 internet d info mais grand public
+web 2.0 internet d'interaction sociale, centralisé (fin des années 2000) => Facebook
+web 3.0 david chaum en 82 : le 1er billet electronique
+cypherpunks en 93 rebelle chiffrement : assuré la vie privé par la cryptographie
+
+adam back 1997 : la preuve de travail (hashcash)
+ 
+
+satoshi nakamoto en 2009 crée le bitcoin
+
+https://nakamotoinstitute.org/cypherpunk-manifesto/
+
+satoshi de arte 
+https://www.youtube.com/watch?v=0ETcLj5jBy4
+Cryptopia
+
+
+
+https://nakamotoinstitute.org/static/docs/bitcoin.pdf
+
+10k contre 2 pizzas
+
+bc se veut la sol 
+bien immateriel rare
+internet decentralisé
+anonymat et pseudonyme
+https au moment des achats sur internet
+
+bc est une techo de stockage et de trainsmission dinfo , transparente et fonctionnant sans organe de control
+
+immuable et daté
+ensemble d ordi  : peer to peer
+
+
+ingredient de la bc
+code libre
+dev de communauté
+p2p
+chiffrement asym
+emprunte numerique
+incitation au consensus
+
+
+attaque 51 au debut de bitcoin
+https://bitcointalk.org/index.php?topic=823.msg9548#msg9548
+
+bitcoin explorer
+etherscan.io
+
+Pow/PoS
+
+etherum fondation (vitalik) 
+client gate qui mine 
+
+
+
+maximalist -> agnostique
+
+
+bitcoin core
+
+bitcoin une monnaie au depart
+
+
+etherum ->decentralisation et plus humain qui se montre comparé au bitcoin
+27 avril certification
+
+
+react
+kovan
+
+openclassroom 
+
+minage btc => 6btc (toutes les 15mn)
+minage eth => 2eth (toutes les 10s) 
+
+Pour vous donner un exemple, ce site permet de calculer votre rentabilité par rapport aux différentes blockchains POW: https://whattomine.com/
+
+De Victor Mauboussin à tout le monde 06:49 PM
+Ethash c'est l'algorithme utilisé par les mineurs sur Ethereum, pas une pool...
+https://academy.bit2me.com/fr/qu%27est-ce-que-l%27algorithme-de-minage-ethash/
+
+
+wei =>10 puissance 18
+Gwei=>10 puissance 9
+
+eth gaz station => 59 standard *
+21k prix utilisé pr un transfert 
+
+https://www.mtpelerin.com/fr/achat-bitcoin
+
+microsoft store -> application
+envionnement linux (wsl2) ubuntu
+https://docs.microsoft.com/fr-fr/windows/wsl/install
+
+https://codewithmosh.com/p/mastering-react
+
+https://www.notion.so/tonted/Ressources-Kovan-Formation-Dev-2f9ce56a7b1241cd843d79dc8a0adbe9
+
+https://www.udemy.com/course/react-formation-complete/ Sinon pour ceux qui peuvent mettre 10-15 balles, ce cours sur udemy est super bien fait
+
+Semaine 2
+client blockchain : hyperledger
+comme geth permet de miner , de construire des blockchain,...
+si centralisé (privé) 
+blockchain hybride 
+La techno à 5 ans
+former des dev, entrepreneur, consultant,...
+
+pb du triangle : decentralisation, sécurité , efficacité
+salvadore : geothermie 
+
+immutabilité force et faiblesse
+adoption de masse
+
+le front running :permet de faire passer une transaction avant celle qui peut faire baisser le cours 
+
+sharding : processus permet de paralleliser les transactions pas encore dispo sur l EVM
+les shared chain assemblage de 64 chaines 
+
+State Channel : utiliser pls transactions et les paralleliser
+
+pow : puissance de calcul
+PoS : depot a minima 32 eth qui est bloqué et dc j accepete de créer des blocs 
+avec un tirage au sort toute les 10sec avec un poids en fonction du nb d ether mis
+
+
+localhost : 8545
+
+enable optimization -> cocher en mise en prod
+solidity compiler en opcode qui est modifié en bytecode (plus compact)
+
+publier sur ipfs => systeme de stockage decentralisé
+
+manu reptils
+mark zeller
+
+
+mkdir gethTest
+cd gethTest
+geth account new --datadir .
+
+pour moi geth account new
+
+Public address of the key:   0xF2FefbEB041576C6784D8D999A65E8b0c93045Af
+Path of the secret key file: /home/eric/.ethereum/keystore/UTC--2022-03-09T17-33-14.811594650Z--f2fefbeb041576c6784d8d999a65e8b0c93045af
+
+puppeth
+
+geth --datadir . init 12345.json
+
+echo ‘eric' > .pwd.txt
+
+https://geth.ethereum.org/docs/interface/private-network
+proof of work
+geth --datadir . --syncmode 'full' --networkid "12345" --port "30303" --http --http.addr '127.0.0.1' --http.port "8545" --http.api 'personal,eth,net,web3,txpool,miner,admin,ethash' --nodiscover --mine --miner.gaslimit '9000000000000' --allow-insecure-unlock --unlock "f2fefbeb041576c6784d8d999a65e8b0c93045af" --password pwd.txt
+
+proof of authority
+geth --datadir . --syncmode 'full' --networkid "12345" --port "30303" --http --http.addr '127.0.0.1' --http.port "8545" --http.api 'personal,eth,net,web3,txpool,miner,admin,clique' --nodiscover --mine --miner.gaslimit '9000000000000' --allow-insecure-unlock --unlock "f2fefbeb041576c6784d8d999a65e8b0c93045af" --password .pwd.txt
+
+
+console 
+geth attach http://127.0.0.1:8545
+
+commande :
+eth.accounts
+eth.getBalance('ADDRESSE1')
+eth.sendTransaction({from : ‘ADDRESSE1’, to : ‘ADDRESSE2', value: '1000000000000000000’})
+eth.getTransaction(‘ADDRESSETRANSAC’)
+eth.getBlock('76')
+
+
+ 
+geth account new -datadir .
+ 
+gethn parity,hyperledger
+ 
+ cyril@alyra.fr
+https://www.youtube.com/watch?v=UQammT_Pulk&ab_channel=Aphal
+
+
+ssh ubuntu@37.187.54.97 
+Mot de passe : jF4Wb4yn7aJT ) 
+
+
+
+
+geth account new --datadir .
+Public address of the key:   0x229C116c8a1d4CDdc8d0bac2813A23B1a26b6B13
+
+geth --datadir . --syncmode 'full' --networkid "1001" --port "30303" --http --http.addr '127.0.0.1' --http.port "8545" --http.api 'personal,eth,net,web3,txpool,miner,admin,clique' --nodiscover --mine --miner.gaslimit '9000000000000' --allow-insecure-unlock --unlock 0x229C116c8a1d4CDdc8d0bac2813A23B1a26b6B13 --password "pwd.txt"
+
+scp ubuntu@37.187.54.97:/home/ubuntu/kovan/kovan.json .
+
+scp -o prefereredautications
+ssh <user>@<ip>'s password: jF4Wb4yn7aJT
+
+geth --datadir . init kovan.json 
+
+geth --datadir . --syncmode 'full' --networkid "10001" --port "30303" --http --http.port "8545" --http.api 'personal,eth,net,web3,txpool,miner,admin,clique' --nodiscover --mine --miner.gaslimit '9000000000000' --allow-insecure-unlock --unlock 0x229C116c8a1d4CDdc8d0bac2813A23B1a26b6B13 --password "pwd.txt"
+
+
+
+geth attach --datadir .
+admin.addPeer("enode://ee85b47db6e21ce2f47de8bdcd1b56dbb420cd03d572cdb6c02dee8d3c83238b5a6b631a8528676523d5b9c54c130b587af2fbd85eaf2ff53719a021d50369c7@37.187.54.97:30303?discport=0")
+
+
+clique.propose("0x229C116c8a1d4CDdc8d0bac2813A23B1a26b6B13", true)
+
+https://besu.hyperledger.org/en/stable/
+
+
+eth.sendTransaction({from : ‘ADDRESSE1’, to : ‘ADDRESSE2', value: '1000000000000000000’})
