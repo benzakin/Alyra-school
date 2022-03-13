@@ -1,0 +1,3 @@
+Cours Solidity
+
+https://ethereum.stackexchange.com/questions/253/the-ether-denominations-are-called-finney-szabo-and-wei-what-who-are-these-na
