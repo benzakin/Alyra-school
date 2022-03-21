@@ -31,7 +31,7 @@ contract Voting is Ownable {
     mapping(uint => Proposal) public proposals;
 
     Proposal[] public arrayProposals;
-  
+   
     event VoterRegistered(address voterAddress);
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
     event ProposalRegistered(uint proposalId);
@@ -41,7 +41,12 @@ contract Voting is Ownable {
         require(getWhitelistStatus(userAddress),"User address is not allow!");
         _;
     }
- 
+
+    constructor (){
+        stateVote = WorkflowStatus.RegisteringVoters;
+        emit WorkflowStatusChange(WorkflowStatus.RegisteringVoters,WorkflowStatus.RegisteringVoters);
+    }
+
     function addRegisteringVoters(address addressVoter) private  {
         voters[addressVoter].isRegistered = true;
         voters[addressVoter].hasVoted = false;
@@ -68,13 +73,21 @@ contract Voting is Ownable {
     }
 
     //Les électeurs inscrits sont autorisés à enregistrer leurs propositions pendant que la session d'enregistrement est active.
-    function addProposals(string memory description) external  onlyWhiteList(msg.sender){
+    function addProposals(string memory description) public  onlyWhiteList(msg.sender){
         require(stateVote == WorkflowStatus.ProposalsRegistrationStarted,"Add Proposal is not allow!");
         
         Proposal memory currentProposal = Proposal(description,0);
  
         arrayProposals.push(currentProposal);
         emit ProposalRegistered(arrayProposals.length-1);
+    }
+  
+      //Les électeurs inscrits sont autorisés à enregistrer leurs propositions pendant que la session d'enregistrement est active.
+    function addListProposals(string[] memory listDescription) external  onlyWhiteList(msg.sender){
+        require(stateVote == WorkflowStatus.ProposalsRegistrationStarted,"Add Proposal is not allow!");
+         for (uint nbProposal = 0; nbProposal < listDescription.length; nbProposal++) {
+            addProposals(listDescription[nbProposal]);
+         }
     }
   
     //L'administrateur de vote met fin à la session d'enregistrement des propositions.
@@ -147,4 +160,10 @@ contract Voting is Ownable {
        else
         return arrayProposals[winningProposal()].description;
     } 
+
+    //liste les propositions avec le nb de votes par proposition
+    function getProposals() external view returns (Proposal[] memory)
+    {
+        return arrayProposals;
+    }
 }
