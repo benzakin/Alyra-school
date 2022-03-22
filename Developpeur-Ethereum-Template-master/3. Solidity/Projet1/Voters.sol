@@ -43,7 +43,7 @@ contract Voting is Ownable {
     }   
     
     modifier onlyStatusWorkflow(WorkflowStatus status){
-        require(stateVote == status,"Action is not allow because your are not in the good status!");
+        require(stateVote == status,"Action is not allow because you are not in the good status!");
         _;
     }
 
