@@ -40,6 +40,11 @@ contract Voting is Ownable {
     modifier onlyWhiteList(address userAddress){
         require(getWhitelistStatus(userAddress),"User address is not allow!");
         _;
+    }   
+    
+    modifier onlyStatusWorkflow(WorkflowStatus status){
+        require(stateVote == status,"Action is not allow because your are not in the good status!");
+        _;
     }
 
     constructor (){
@@ -54,17 +59,15 @@ contract Voting is Ownable {
     }
  
     //L'administrateur du vote enregistre une liste blanche d'électeurs identifiés par leur adresse Ethereum
-     function addListRegisteringVoters(address[] memory listAddressVoters) external onlyOwner {
-        require(stateVote == WorkflowStatus.RegisteringVoters,"Registering is not allow");
+     function addListRegisteringVoters(address[] memory listAddressVoters) external onlyOwner onlyStatusWorkflow(WorkflowStatus.RegisteringVoters){
         for (uint nbVoters = 0; nbVoters < listAddressVoters.length; nbVoters++) {
             addRegisteringVoters(listAddressVoters[nbVoters]);
         }
     }
 
     //L'administrateur du vote commence la session d'enregistrement de la proposition
-    function proposalsRegistrationStarted() external onlyOwner {
-        require(stateVote == WorkflowStatus.RegisteringVoters,"Proposals Registration Started is not allow!");
-        stateVote = WorkflowStatus.ProposalsRegistrationStarted;
+    function proposalsRegistrationStarted() external onlyOwner onlyStatusWorkflow(WorkflowStatus.RegisteringVoters){
+         stateVote = WorkflowStatus.ProposalsRegistrationStarted;
         emit WorkflowStatusChange(WorkflowStatus.ProposalsRegistrationStarted,WorkflowStatus.ProposalsRegistrationEnded);
     }
 
@@ -73,9 +76,7 @@ contract Voting is Ownable {
     }
 
     //Les électeurs inscrits sont autorisés à enregistrer leurs propositions pendant que la session d'enregistrement est active.
-    function addProposals(string memory description) public  onlyWhiteList(msg.sender){
-        require(stateVote == WorkflowStatus.ProposalsRegistrationStarted,"Add Proposal is not allow!");
-        
+    function addProposals(string memory description) public  onlyWhiteList(msg.sender) onlyStatusWorkflow(WorkflowStatus.ProposalsRegistrationStarted){   
         Proposal memory currentProposal = Proposal(description,0);
  
         arrayProposals.push(currentProposal);
@@ -83,44 +84,38 @@ contract Voting is Ownable {
     }
   
       //Les électeurs inscrits sont autorisés à enregistrer leurs propositions pendant que la session d'enregistrement est active.
-    function addListProposals(string[] memory listDescription) external  onlyWhiteList(msg.sender){
-        require(stateVote == WorkflowStatus.ProposalsRegistrationStarted,"Add Proposal is not allow!");
+    function addListProposals(string[] memory listDescription) external onlyWhiteList(msg.sender) onlyStatusWorkflow(WorkflowStatus.ProposalsRegistrationStarted){   
          for (uint nbProposal = 0; nbProposal < listDescription.length; nbProposal++) {
             addProposals(listDescription[nbProposal]);
          }
     }
   
     //L'administrateur de vote met fin à la session d'enregistrement des propositions.
-    function proposalsRegistrationEnded() external onlyOwner {
-        require(stateVote == WorkflowStatus.ProposalsRegistrationStarted,"Proposals Registration Ended is not allow!");
+    function proposalsRegistrationEnded() external onlyOwner onlyStatusWorkflow(WorkflowStatus.ProposalsRegistrationStarted){   
         stateVote = WorkflowStatus.ProposalsRegistrationEnded;
         emit WorkflowStatusChange(WorkflowStatus.ProposalsRegistrationEnded,WorkflowStatus.ProposalsRegistrationEnded);
     }
 
     //L'administrateur du vote commence la session de vote.
-    function sessionVotingStarted() external onlyOwner {
-        require(stateVote == WorkflowStatus.ProposalsRegistrationEnded,"Voting Session Start is not allow!");
+    function sessionVotingStarted() external onlyOwner  onlyStatusWorkflow(WorkflowStatus.ProposalsRegistrationEnded){   
         stateVote = WorkflowStatus.VotingSessionStarted;
         emit WorkflowStatusChange(WorkflowStatus.ProposalsRegistrationEnded,WorkflowStatus.VotingSessionStarted);
     }
 
     //L'administrateur du vote met fin à la session de vote.
-    function sessionVotingEnded() external onlyOwner {
-        require(stateVote == WorkflowStatus.VotingSessionStarted,"Voting Session End is not allow!");
-        stateVote = WorkflowStatus.VotingSessionEnded;
+    function sessionVotingEnded() external onlyOwner onlyStatusWorkflow(WorkflowStatus.VotingSessionStarted){   
+         stateVote = WorkflowStatus.VotingSessionEnded;
         emit WorkflowStatusChange(WorkflowStatus.VotingSessionStarted,WorkflowStatus.VotingSessionEnded);
     }
 
     //L'administrateur du vote comptabilise les votes.
-     function sessionVotesTallied() external onlyOwner {
-        require(stateVote == WorkflowStatus.VotingSessionEnded,"Session Votes Tallied is not allow!");
+     function sessionVotesTallied() external onlyOwner onlyStatusWorkflow(WorkflowStatus.VotingSessionEnded){   
         stateVote = WorkflowStatus.VotesTallied;
         emit WorkflowStatusChange(WorkflowStatus.VotingSessionStarted,WorkflowStatus.VotesTallied);
     }
 
      //Les électeurs inscrits votent pour leur proposition préférée.
-    function vote(uint proposalId) external onlyWhiteList(msg.sender){
-        require(stateVote == WorkflowStatus.VotingSessionStarted,"Voting is not allow");
+    function vote(uint proposalId) external onlyWhiteList(msg.sender) onlyStatusWorkflow(WorkflowStatus.VotingSessionStarted){   
         Voter storage sender = voters[msg.sender];
         require(!sender.hasVoted , "Already voted");
         sender.hasVoted = true;
@@ -152,18 +147,12 @@ contract Voting is Ownable {
      }
 
     //retourne la description de la proposition gagnante
-    function getWinner() external view returns(string memory)
-    {
-       require(stateVote == WorkflowStatus.VotesTallied,"Voting Session is not finished");
-       if (stateVote != WorkflowStatus.VotesTallied) 
-        return "Voting Session is not finished";
-       else
+    function getWinner() external view  onlyStatusWorkflow(WorkflowStatus.VotesTallied) returns(string memory){
         return arrayProposals[winningProposal()].description;
     } 
 
     //liste les propositions avec le nb de votes par proposition
-    function getProposals() external view returns (Proposal[] memory)
-    {
+    function getProposals() external view returns (Proposal[] memory){
         return arrayProposals;
     }
 }
