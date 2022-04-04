@@ -113,7 +113,7 @@ contract('Voting', accounts => {
 
        
           it("test step end Proposals Registering", async () => {
-              await expectRevert(VotingInstance.endProposalsRegistering({from: Account1}), "Ownable: caller is not the owner.");
+              await expectRevert(VotingInstance.endProposalsRegistering({from: Account1}), ErrorOwner );
 
                const findEvent = await VotingInstance.endProposalsRegistering({from: OwnerAccount});
                expectEvent(findEvent, "WorkflowStatusChange", {previousStatus: ProposalsRegistrationStarted, newStatus:  ProposalsRegistrationEnded}); 
