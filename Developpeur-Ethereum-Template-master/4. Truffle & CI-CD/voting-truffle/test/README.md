@@ -108,7 +108,7 @@ All files    |      100 |    96.43 |      100 |      100 |                |
 - test si le voteur est bien enregistré
 - test si le voteur a déjà voté
 - test si la proposition n existe pas
-- test si le voteur Account6 a voté pour la proposition "Proposal_1"
+- test si le voteur Account6 a voté pour la proposition 1 qui est "Proposal_1"
 - test si le voteur Account6 a bien le flag voted à vrai
 - test l'evenement Voted avec le voteur Account6 et la proposition 1
 - test si c'est bien le owner qui fait le changement de workflow (VotingSessionEnd); 
