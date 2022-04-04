@@ -31,3 +31,13 @@ Contract: Voting
 
   11 passing (13s)
 ```
+
+Les tests sont décomposés en fonction du workflow :
+
+Enregistrement des voteurs :
+
+1.Apres l'ajout d'un voteur on si la propriété registred est vrai
+
+2.On test lors de l'ajout d'un voteur si c'est bien le owner
+
+3.
