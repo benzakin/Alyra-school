@@ -32,10 +32,39 @@ Contract: Voting
   11 passing (13s)
 ```
 
-### Enregistrement des voteurs :
+### Enregistrement des voteurs (Test step for Registering Voters):
 
 - Apres l'ajout d'un voteur on si la propriété registred est vrai;
-- On test lors de l'ajout d'un voteur si c'est bien le owner;
-- On test lors de l'ajout d'un voteur si c'est bien le owner;
+-  test lors de l'ajout d'un voteur si c'est bien le owner;
+-  test lors de l'ajout d'un voteur si il a deja été enregistré;
+-  test lors de l'ajout d'un voteur si il est bien dans le bon workflow pour le faire;
+
+### Enregistrement des propositions  (Test step for Proposals Registration Started Part 1):
+
+-  test si c'est bien le owner qui fait le changement de workflow;
+-  test le changement de workflow;
+-  test l'evenement du changement de workflow;
+
+### Enregistrement des propositions  (Test step for Proposals Registration Started Part 2):
+
+-  test si une proposition est vide;
+-  test si c'est bien un voteur qui fait la proposition;
+-  test l'evenement du changement de workflow;
+-  test qu'apres création de la proposition le nombre de vote est initialisé à 0;
+-  test l'evenement de l'ajout d'une proposition
+-  test si c'est bien le owner qui fait le changement de workflow (ProposalsRegistrationEnded); 
+-  test l'evenement du changement de workflow(ProposalsRegistrationEnded);
+-  test si c'est bien le owner qui fait le changement de workflow (StartVotingSession); 
+-  test le changement de workflow;
+-  test l'evenement du changement de workflow (VotingSessionStarted);
+
+### Ajout des votes  (Test step for Voting Session Started):
+
+- test le workflow pour savoir si on est bien en startvotingsession;
+- test si le voteur est bien enregistré
+- test si le voteur a déjà voté
+- 
+
+
 
 
