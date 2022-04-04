@@ -63,7 +63,25 @@ Contract: Voting
 - test le workflow pour savoir si on est bien en startvotingsession;
 - test si le voteur est bien enregistré
 - test si le voteur a déjà voté
-- 
+- test si la proposition n existe pas
+- test si le voteur Account6 a voté pour la proposition "Proposal_1"
+- test si le voteur Account6 a bien le flag voted à vrai
+- test l'evenement Voted avec le voteur Account6 et la proposition 1
+- test si c'est bien le owner qui fait le changement de workflow (VotingSessionEnd); 
+-  test le changement de workflow;
+-  test l'evenement du changement de workflow (VotingSessionEnd);
+
+### Dépouillement  (Test step for Voting Session Ended):
+
+-  test le changement de workflow;
+-  test si c'est bien le owner qui fait le changement de workflow (VotesTallied);  
+-  test l'evenement 
+-  test si le vainqueur est bien la proposition 1 
+-  test l'evenement du changement de workflow (VotesTallied);
+
+
+
+
 
 
 
