@@ -168,9 +168,9 @@ contract('Voting', accounts => {
             const findEvent =  await VotingInstance.setVote(new BN(1), {from: Account6});
             const testVoter = await VotingInstance.getVoter(Account6,{from: Account1});
 
-             expect(testVoter.votedProposalId).to.be.bignumber.equal(new BN(1), "Waiting Proposal_1");
+             expect(testVoter.votedProposalId).to.be.bignumber.equal(new BN(1), "Account6 has Proposal_1");
 
-             expect(testVoter.hasVoted).to.equal(true, "Waiting true");
+             expect(testVoter.hasVoted).to.equal(true, "Account6 has voted");
               
              expectEvent(findEvent, "Voted", {voter: Account6, proposalId: new BN(1)});
 
