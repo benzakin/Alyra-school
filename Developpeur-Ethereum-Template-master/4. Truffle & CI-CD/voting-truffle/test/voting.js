@@ -70,11 +70,8 @@ contract('Voting', accounts => {
 
         it("test require startProposalsRegistering", async () => {
             await expectRevert(VotingInstance.startProposalsRegistering({from: Account1}), ErrorOwner);
-
-            const findEvent = await VotingInstance.startProposalsRegistering({from: OwnerAccount});
-
+            await VotingInstance.startProposalsRegistering({from: OwnerAccount});
             await expectRevert(VotingInstance.startProposalsRegistering({from: OwnerAccount}), "Registering proposals cant be started now");
-            expectEvent(findEvent, "WorkflowStatusChange", {previousStatus: RegisteringVoters, newStatus: ProposalsRegistrationStarted});
         });
 
         it("test event startProposalsRegistering", async () => {
