@@ -34,7 +34,7 @@ Contract: Voting
 
 ### Enregistrement des voteurs (Test step for Registering Voters):
 
-- Apres l'ajout d'un voteur on si la propriété registred est vrai;
+-  test l'ajout d'un voteur et si la propriété registred est vrai;
 -  test lors de l'ajout d'un voteur si c'est bien le owner;
 -  test lors de l'ajout d'un voteur si il a deja été enregistré;
 -  test lors de l'ajout d'un voteur si il est bien dans le bon workflow pour le faire;
