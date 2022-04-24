@@ -1,3 +1,4 @@
+```
 ======= Context.sol:Context =======
 Developer Documentation
 {
@@ -262,3 +263,4 @@ User Documentation
   },
   "version": 1
 }
+```
