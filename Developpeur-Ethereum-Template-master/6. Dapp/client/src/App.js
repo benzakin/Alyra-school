@@ -6,17 +6,21 @@ import getWeb3 from "./getWeb3";
 import Accordion from 'react-bootstrap/Accordion';
 import Alert from 'react-bootstrap/Alert';
 import Card from 'react-bootstrap/Card';
+import Navbar from 'react-bootstrap/Navbar';
+import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Stack from 'react-bootstrap/Stack';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Table from 'react-bootstrap/Table';
 
+import AddressesVoters from "./component/AddressesVoters";
+// import Proposals from "./component/Proposals";
+
 import "./App.css";
-import ListGroupItem from "react-bootstrap/esm/ListGroupItem";
 
 class App extends Component {
-  state = { web3: null, accounts: null, contract: null, isWeb3Error:null };
+  state = { web3: null, accounts: null, contract: null,contractInformation: null, isWeb3Error:null };
 
   componentDidMount = async () => {
    
@@ -42,7 +46,7 @@ class App extends Component {
       ); 
 
       // Set web3, accounts, and contract to the state, and then proceed with runInit 
-      this.setState({ web3, accounts, contract: instance, isWeb3Error }, this.runInit);
+      this.setState({ web3, accounts, contract: instance, isWeb3Error });
     
     } catch (error) {      
       isWeb3Error = true
@@ -69,23 +73,27 @@ class App extends Component {
     const connectedAccount = accounts[0];
     const isOwner = connectedAccount === contractOwner ? true : false;
    // const isVoter = connectedAccount === contractOwner ? true : false;
-
+   const isVoter = votersAdresses.indexOf(connectedAccount) > -1;
    
-    if(!isOwner)
-    {
-      //winningProposal = await contract.methods.getWinningProposal().call(); // the winning proposal
-    }
+   if(currentWorkflowStatus == "5")
+   {
+     winningProposal = await contract.methods.getWinningProposal().call(); // the winning proposal
+   }
 
-    let contractInformation = {
+    const isVoteOpen = currentWorkflowStatus == "3";
+
+   let  contractInformation = {
         contractOwner: contractOwner,
         currentWorkflowStatus: currentWorkflowStatus,
         proposals: proposals,
         votersAdresses: votersAdresses,
-        winningProposal: winningProposal,        
+        winningProposal: winningProposal,  
+        isVoter : isVoter,
+        isVoteOpen :  isVoteOpen     
     };
     
     this.setState({ contractInformation });
-    //this.setAccountInformation();
+    this.setAccountInformation();
     this.getUIWorkflowStatus();
 
     // ********** Events management **********
@@ -105,21 +113,21 @@ class App extends Component {
     const { accounts, contract, contractInformation, web3 } = this.state;
     const connectedAccount = accounts[0];
     const isOwner = connectedAccount === contractInformation.contractOwner ? true : false;
-
+    let voterInformation = null;
     let canVote = false;
     let isRegistered = false;
     let hasVoted = false; 
 
-    if (!isOwner)
+    const isVoter = contractInformation.votersAdresses.indexOf(connectedAccount) > -1;
+  
+    if (!isOwner && isVoter)
     {
-     const voterInformation = await contract.methods.getVoter(connectedAccount).call({ from: connectedAccount }).then(response => {
-      alert(response);     
-    });
+      voterInformation = await contract.methods.getVoter(connectedAccount).call({ from: connectedAccount });
+    }
 
      canVote = voterInformation && voterInformation.isRegistered && !voterInformation.hasVoted;
      isRegistered = voterInformation && voterInformation.isRegistered;
      hasVoted = voterInformation && voterInformation.hasVoted; 
-    }
    
     let accountInformation = {
       account: connectedAccount,
@@ -132,7 +140,6 @@ class App extends Component {
     this.setState({ accountInformation });   
   };
 
-  
   getUIWorkflowStatus = async() => {
     const { contractInformation } = this.state;
 
@@ -161,6 +168,7 @@ class App extends Component {
 
   }
 
+
   // ========== Handles events ==========
   
   // Account change on Metamask
@@ -169,15 +177,16 @@ class App extends Component {
     const reloadedAccounts = await web3.eth.getAccounts();   
     this.setState({ accounts: reloadedAccounts });
     this.setAccountInformation();
-    console.log("handleAccountsChanged");
+  
 }
 
   // Workflow change
   handleWorkflowStatusChange = async(event) => {  
     const { contract, contractInformation } = this.state;
-    contractInformation.currentWorkflowStatus = event.returnValues.newStatus;    
+    contractInformation.currentWorkflowStatus = event.returnValues._newStatus;  
+    this.setState({ contractInformation });
+    this.setAccountInformation();
     this.getUIWorkflowStatus();
-    console.log("handleWorkflowStatusChange");
   }
 
   //Voter added
@@ -185,21 +194,19 @@ class App extends Component {
     const { contract, contractInformation } = this.state;
     contractInformation.votersAdresses = await contract.methods.getVotersAdresses().call(); 
     this.setState({ contractInformation });    
-    console.log("handleVoterAdded");
+    
   }
-
 
   //Proposal registred
   handleProposalRegistered = async(event) => {    
     this.listAllProposals();
-    console.log("handleProposalRegistered");
+   
   }
-
 
   //Vote done
   handleVoted = async(event) => {    
     this.listAllProposals();
-    console.log("handleVoted");
+  
   }
 
 // ============== Contract interactions =================
@@ -210,13 +217,12 @@ class App extends Component {
 
       const { accounts, contract } = this.state;
       const address = this.address.value;
-      console.log("addVoter");
-      await contract.methods.addVoter(address.trim()).send({ from: accounts[0] }).then(response => {
-        alert('Enregistrement réussi', "ENREGISTREMENT");
+      await contract.methods.addVoter(address.trim()).send({ from: accounts[0] }).then(response => {     
+        //console.log(response);  
         this.address.value = '';
       })
     } catch (error) {
-      alert(error, "ERREUR");
+         alert(error.message, "Error");
     }
   }
 
@@ -224,11 +230,9 @@ class App extends Component {
   openProposaRegistration = async () => {
     try {
       const { accounts, contract } = this.state;
-      await contract.methods.startProposalsRegistering().send({ from: accounts[0] }).then(response => {
-        alert('Ouverture des enregistrements pour propositions', "SESSION PREOPOSITIONS");
-      });
+      await contract.methods.startProposalsRegistering().send({ from: accounts[0] });
     } catch (error) {
-      alert(error, "ERREUR");
+      alert(error.message, "Error");
     }
   }
 
@@ -238,11 +242,11 @@ class App extends Component {
       const { accounts, contract } = this.state;
       const description = this.proposal.value;
 
-      await contract.methods.addProposal(description).send({ from: accounts[0] }).then(response =>{
-        alert("Proposition enregistrée","ENREGISTREMENT");
-      })
+      await contract.methods.addProposal(description).send({ from: accounts[0] }).then(response => {     
+        this.proposal.value = '';
+      });
     }catch (error) {
-      alert(error, "ERREUR");
+      alert(error.message, "Error");
     }
   }
 
@@ -251,10 +255,14 @@ class App extends Component {
     try {
       const { contract, contractInformation } = this.state;
       contractInformation.proposals = await contract.methods.getProposals().call();
+      
+      console.log("contractInformation.proposals=");
+      console.log(contractInformation.proposals);
+
       this.setState({ contractInformation });
       this.setAccountInformation();
     } catch (error) {
-      alert(error, "ERREUR");
+      alert(error.message, "Error");
     }
   }
 
@@ -262,36 +270,32 @@ class App extends Component {
   closeProposalRegistrationn = async () => {
     try {
       const { accounts, contract } = this.state;
-      await contract.methods.endProposalsRegistering().send({ from: accounts[0] }).then(response => {
-        alert('Fermeture des enregistrements pour propositions', "SESSION PREOPOSITIONS");
-      });
+      await contract.methods.endProposalsRegistering().send({ from: accounts[0] }).then(response => {     
+           alert("Close Proposal");
+      })
     } catch (error) {
-      alert(error, "ERREUR");
+      alert(error.message, "Error");
     }
   }
 
   //Open vote session
-  openVote = async() => {
+  startVotingSession = async() => {
     try{
       const { accounts, contract } = this.state;
-      await contract.methods.startVotingSession().send({ from: accounts[0] }).then(response => {
-        alert('Ouverture du VOTE', "VOTE");
-      });
+      await contract.methods.startVotingSession().send({ from: accounts[0] });
 
     }catch (error) {
-      alert(error, "ERREUR");
+      alert(error.message, "Error");
     }
   }
 
   //Close vote session
-  closeVote = async () => {
+  endVotingSession = async () => {
     try {
       const { accounts, contract } = this.state;
-      await contract.methods.endVotingSession().send({ from: accounts[0] }).then(response => {
-        alert('Fermeture du VOTE', "VOTE");
-      });
+      await contract.methods.endVotingSession().send({ from: accounts[0] });
     } catch (error) {
-      alert(error, "ERREUR");
+      alert(error.message, "Error");
     }
   }
 
@@ -300,41 +304,48 @@ class App extends Component {
     try {
       //alert(index.target.value);
       const { accounts, contract } = this.state;
-      await contract.methods.setVote(index.target.value).send({from: accounts[0]}).then(response => {
-       alert("Vote effectué");
-      }).catch(error => {
-        alert("ERREUR:"+error);
-      });
+      await contract.methods.setVote(index.target.value).send({from: accounts[0]});
     } catch (error) {
-      alert(error, "ERREUR");
+      alert(error.message, "Error");
+ 
     }
   }
 
   // Process vote result
-  processVoteResults = async () => {
+  endVotesTallied = async () => {
     try {
       const { accounts, contract } = this.state;
-      await contract.methods.tallyVotes().send({ from: accounts[0] }).then(response => {
-        alert('Résultat du vote disponible !', "VOTE");
-      });
+      await contract.methods.endVotesTallied().send({ from: accounts[0] });
     } catch (error) {
-      alert(error, "ERREUR");
+      alert(error.message, "Error");
+ 
+    }
+  }  
+  
+  getWinningProposal = async () => {
+    try {
+      const {contract, contractInformation } = this.state;
+        await contract.methods.getWinningProposal().call().then(response => {    
+          contractInformation.winningProposal = response;
+          console.log(response);
+          this.setState({ contractInformation });
+     })
+    } catch (error) {
+      alert(error.message, "Error");
+ 
     }
   }
 
 // **************************************** Render ****************************************
 
-//a tester
-//https://www.npmjs.com/package/react-toastify 
-
   render() {
-    const { accounts, accountInformation, contractInformation, UIWorkflowStatus, isWeb3Error } = this.state;
-
+    const { accounts, accountInformation, contractInformation, UIWorkflowStatus } = this.state;
     
     //Loading
     let divConnection = <Alert variant='info'>
-      Loading Web3, accounts, and contract...
-    </Alert>   
+      Connect your Metamask
+    </Alert> 
+
     if (!this.state.web3) {
       return divConnection
     }
@@ -344,7 +355,7 @@ class App extends Component {
     //DIV User connection info 
     let divConnectionInfo = accountInformation ? 
       accountInformation.account + " ": 
-      "Veuillez connecter un compte"
+      "Connect Wallet"
     
     //Contract info
     let isOwner = (accountInformation && accountInformation.isOwner)
@@ -363,15 +374,50 @@ class App extends Component {
     let uiStatus = UIWorkflowStatus
     
     //DIV Admin buttons
-    let divAdminButtons = <Card border="primary"><Card.Body>
-      <Card.Title>Menu admin</Card.Title>
-      
-      <Button variant="primary" onClick={this.openProposaRegistration}>Ouvrir la session</Button>{' '}
-      <Button variant="primary" onClick={this.closeProposalRegistrationn}>Fermer la session</Button>{' '}
-      <Button variant="primary" onClick={this.openVote}>Ouvrir le vote </Button>{' '} 
-      <Button variant="primary" onClick={this.closeVote}>Fermer le vote</Button>{' '}
-      <Button variant="success" onClick={this.processVoteResults}>Resultat</Button>{' '}
-    </Card.Body></Card>
+
+
+let divOpenProposaRegistrationButtons =
+<>
+<Button onClick={this.openProposaRegistration}>
+   Open proposal registration
+   </Button> 
+</>
+
+let divCloseProposalRegistrationButtons =
+<>
+<Button onClick={this.closeProposalRegistrationn}>
+  Close proposal registration
+  </Button> 
+</>
+
+let divStartVotingSessionButtons =
+<>
+<Button onClick={this.startVotingSession}>
+ Start Voting Session
+ </Button> 
+</>
+
+let divEndVotingSessionButtons =
+<>
+ <Button onClick={this.endVotingSession}>
+ End Voting Session
+ </Button> 
+</>
+
+let divEndVotesTalliedButtons =
+<>
+ <Button onClick={this.endVotesTallied}>
+ End Voting Session
+ </Button> 
+</>
+
+let divGetWinningProposalButtons =
+<>
+ <Button onClick={this.getWinningProposal}>
+ Get Winner
+ </Button> 
+</>
+
 
     //DIV Add Voters
     let divAddVoter =  
@@ -381,117 +427,103 @@ class App extends Component {
           ref={(input) => { this.address = input }}
         />
       </Form.Group>
-      <Button onClick={this.registeringUsers}  >Ajouter un compte</Button>
+      <Button onClick={this.registeringUsers}>Add new account</Button>
       </Stack>
     
-    //DIV Registered voters
-    let divRegistreredVoters = <ListGroup variant="flush">       
-      <ListGroup.Item>      
-        <Table hover>      
-          <tbody>
-            {contractInformation && typeof (contractInformation.votersAdresses) !== 'undefined' && contractInformation.votersAdresses !== null &&
-              contractInformation.votersAdresses.map((a) => <tr key={a.toString()}><td>{a}</td></tr>)
-            }
-          </tbody>
-        </Table>
-      </ListGroup.Item>
-    </ListGroup>
+//DIV Add proposal
+let divAddProposal = <Stack direction="horizontal" gap={3}><Form className="w-50"> 
+<Form.Control type="text" id="proposal" placeholder="Your proposal"
+  ref={(input) => { this.proposal = input }}
+/>        
+</Form>
+<Button onClick={this.addProposal}>Enregistrer</Button>
+</Stack>
 
-    //DIV Add proposal
-    let divAddProposal = <Stack direction="horizontal" gap={3}><Form className="w-50"> 
-      <Form.Control type="text" id="proposal" placeholder="Votre proposition"
-        ref={(input) => { this.proposal = input }}
-      />        
-    </Form>
-    <Button onClick={this.addProposal}  >Enregistrer</Button>
-    </Stack>
+//DIV list proposals
+const tdButtonVote = (index) => {
+if (isVoter && isVoteOpen) {
+  return <>
+           <Button onClick={ this.voteForProposal } value={index}>Voter</Button>&nbsp;
+         </>;
+}else {
+  return <></>;
+}
+}
 
-    //DIV list proposals
-    const tdButtonVote = (index) => {
-      if (isVoter && isVoteOpen) {
-        return <>
-                 <Button onClick={ this.voteForProposal } value={index}>Voter</Button>&nbsp;
-               </>;
-      }else {
-        return <></>;
+let divProposals = <ListGroup>
+<ListGroup.Item>
+  <Table hover>
+    <tbody>
+      {contractInformation && contractInformation.proposals != null &&
+        contractInformation.proposals.map((prop, index) => 
+        <tr key={index}>               
+        <td>#{index} - {prop.description} ({prop[1]} vote(s))</td>
+        <td>{tdButtonVote(index)}</td>
+        </tr>)
       }
-    }
-    let divProposals = <ListGroup>
-      <ListGroup.Item>
-        <Table hover>
-          <tbody>
-            {contractInformation && contractInformation.proposals != null &&
-              contractInformation.proposals.map((prop, index) => 
-              <tr key={index}>               
-              <td>#{index} - {prop.description} ({prop[1]} vote(s))</td>
-              <td>{tdButtonVote(index)}</td>
-              </tr>)
-            }
-          </tbody>
-        </Table>
-      </ListGroup.Item>
-    </ListGroup>
-    
-    //DIV divResult
-    let divResult = <Accordion.Item eventKey="2"align="center" >
-      <Accordion.Header>Résultat du vote</Accordion.Header>
-      <Accordion.Body>
-        <Card style={{ width: '18rem' }}>
-          <Card.Body>
-            <Card.Title>Résultat du vote</Card.Title>
-            <Card.Text>
-           {contractInformation !=null  && contractInformation.winningProposal? 
-           contractInformation.winningProposal[0] + "(" + contractInformation.winningProposal[1] + " votes)": 
-           ""}            
-            </Card.Text>
-          </Card.Body>
-        </Card>
-      </Accordion.Body>
-    </Accordion.Item>
-
-
-
-
-    // ======== DISPLAY RENDER ========
+    </tbody>
+  </Table>
+</ListGroup.Item>
+</ListGroup>
+   
+     // ======== DISPLAY RENDER ========
     return (
-      <div className="App">        
-        <h1>VOTING DAPP</h1>
-        <h2>ALYRA TP 3 </h2>
+      <div className="App">   
+        <Navbar bg="dark" variant="dark">
+          <Container>
+            <Navbar.Brand href="#">VOTING DAPP - Defi Project #3</Navbar.Brand>
+              <Form className="d-flex navbar-brand" > 
+              <Button variant="outline-success" onClick={this.runInit}>
+              {divConnectionInfo}
+              </Button>
 
-        {/* Header*/}
-        <Card>
-          <Card.Header>Status actuel : {uiStatus}</Card.Header>
+              </Form>
+          </Container>
+        </Navbar>        
+        
+        <Navbar>
+          <Container>
+            <Navbar.Brand href="#">Status : {uiStatus}</Navbar.Brand>    
+            {uiStatus=="RegisteringVoters" && isOwner? divOpenProposaRegistrationButtons : ""}
+          {uiStatus=="ProposalsRegistrationStarted" && isOwner? divCloseProposalRegistrationButtons : ""}
+          {uiStatus=="ProposalsRegistrationEnded" && isOwner? divStartVotingSessionButtons : ""}
+          {uiStatus=="VotingSessionStarted" && isOwner? divEndVotingSessionButtons : ""}
+          {uiStatus=="VotingSessionEnded" && isOwner? divEndVotesTalliedButtons : ""}    
+          {uiStatus=="VotesTallied" && isOwner? divGetWinningProposalButtons : ""}    
+          </Container>
+        </Navbar>    
+
+          <Card key={1}>
+          <Card.Header> List voters    </Card.Header>
           <Card.Body>
-            <Card.Title>{divConnectionInfo}{isOwner ? divIsOwner
-              :
-              ""}</Card.Title>
             <Card.Text>
-              {isOwner ?
-                "Vous êtes l'administrateur, vous gérez les votes" :
-                "Le système de vote est géré par un administrateur"}
+              {isOwner && uiStatus == "RegisteringVoters" ? divAddVoter : ""}
+              <AddressesVoters contractInformation={this.state.contractInformation}></AddressesVoters>
             </Card.Text>
-            {isOwner ? divAdminButtons : ""}
+          
           </Card.Body>
         </Card>
 
-        {/* Voters list section */}
-        <Accordion >
-        {isVoteTallied ? divResult:null}       
-          <Accordion.Item eventKey="0">
-            <Accordion.Header>Liste des votants</Accordion.Header>
-            <Accordion.Body>
-              {isOwner ? divAddVoter : ""}
-              {divRegistreredVoters}
-            </Accordion.Body>
-          </Accordion.Item>
-          <Accordion.Item eventKey="1">
-            <Accordion.Header>Liste des propositions</Accordion.Header>
-            <Accordion.Body>
+
+        <Card key={2}>
+            <Card.Header>Proposals</Card.Header>
+            <Card.Body>
+              <Card.Text>
               {isVoter && isRegistrationOpen ? divAddProposal : ""}
               {divProposals}
-            </Accordion.Body>
-          </Accordion.Item>           
-        </Accordion>
+              </Card.Text>
+            </Card.Body>
+          </Card>
+
+          <Card key={3}>
+            <Card.Header>Tally vote</Card.Header>
+            <Card.Body>
+              <Card.Text>            
+              {contractInformation !=null  && contractInformation.winningProposal? 
+           contractInformation.winningProposal[0] + "(" + contractInformation.winningProposal[1] + " votes)": ""}  
+              </Card.Text>
+            </Card.Body>
+          </Card>
 
       </div>
     );
